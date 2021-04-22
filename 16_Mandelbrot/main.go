@@ -1,8 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"math"
+	"os"
 )
 
 func Abs(c complex128) float64 {
@@ -21,24 +24,30 @@ func analizeSequence(N int, x, y float64) bool {
 	return true
 }
 
-func visualizeData(size,N int) {
+func visualizeData(size, N int) {
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{3 * size, 2 * size}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+
 	for i := 0; i < 2*size; i++ {
-		var y float64
-		y = 2.0 * float64(i)/float64(2*size) - 1.0
+		y := 2.0*float64(i)/float64(2*size) - 1.0
 		for j := 0; j < 3*size; j++ {
-			var x float64
-			x = 3.0 * float64(j)/float64(3*size) - 2.0
-			if(analizeSequence(N,x,y)){
-				fmt.Print("*")
-			}else{
-				fmt.Print(" ")
+			x := 3.0*float64(j)/float64(3*size) - 2.0
+			if analizeSequence(N, x, y) {
+				img.Set(j, i, color.White)
+			} else {
+				img.Set(j, i, color.Transparent)
 			}
 		}
-		fmt.Println()
+
 	}
 
+	// Encode as PNG.
+	f, _ := os.Create("image.png")
+	png.Encode(f, img)
 }
 
 func main() {
-	visualizeData(60,200)
+	visualizeData(600, 200)
 }
