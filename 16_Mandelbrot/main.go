@@ -6,23 +6,19 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"math"
+	"math/cmplx"
 	"os"
 	"runtime"
 	"sync"
 	"time"
 )
 
-func Abs(c complex128) float64 {
-	return math.Sqrt(real(c)*real(c) + imag(c)*imag(c))
-}
-
 func analyzeSequence(N int, x, y float64) uint8 {
 	z := complex(0, 0)
 	p := complex(x, y)
 	for i := 1; i < N; i++ {
 		z = z*z + p
-		if Abs(z) >= 2.0 {
+		if cmplx.Abs(z) >= 2.0 {
 			return uint8(255 * i / N)
 		}
 	}
@@ -30,13 +26,13 @@ func analyzeSequence(N int, x, y float64) uint8 {
 }
 
 func createImage(size, N, cpuCount int) (time.Duration, image.Image) {
-	runtime.GOMAXPROCS(cpuCount)
-	workPerCore := 6 * size * size / cpuCount
-
 	upLeft := image.Point{0, 0}
 	lowRight := image.Point{3 * size, 2 * size}
 	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
 
+	runtime.GOMAXPROCS(cpuCount)
+	//6*size*size is bringing 2D image of width 3*size and height 2*size into 1D
+	workPerCore := 6 * size * size / cpuCount
 	var wg sync.WaitGroup
 	wg.Add(cpuCount)
 
@@ -81,7 +77,7 @@ func main() {
 
 	if *benchmarkMode {
 		calculationsTime, _ := createImage(*size, *accuracy, *cpuCount)
-		fmt.Println("size =", *size, "accuracy =", *accuracy, "cpuCount = ", *cpuCount, "calculationsTime =", calculationsTime)
+		fmt.Println("size =", *size, "accuracy =", *accuracy, "cpuCount =", *cpuCount, "calculationsTime =", calculationsTime)
 	} else {
 		visualizeData(*size, *accuracy, *cpuCount)
 	}
